@@ -25,9 +25,13 @@
     ]
   },
   "dependencies": {
+    "@ant-design/icons": "^4.5.0",
     "@ant-design/pro-layout": "6.14.4",
+    "@types/styled-components": "^5.1.7",
     "@umijs/preset-react": "1.x",
+    "ahooks": "^2.9.6",
     "antd": "4.12.3",
+    "styled-components": "^5.2.1",
     "umi": "3.3.9"
   },
   "devDependencies": {

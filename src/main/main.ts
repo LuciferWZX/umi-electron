@@ -13,13 +13,14 @@ protocol.registerSchemesAsPrivileged([
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1300,
+    height: 800,
     webPreferences: {
       nodeIntegration: true,
     },
   });
   if (isDevelopment) {
+    mainWindow.webContents.openDevTools();
     mainWindow.loadURL('http://localhost:8000');
   } else {
     createProtocol('app');
