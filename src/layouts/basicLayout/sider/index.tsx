@@ -26,7 +26,9 @@ const LeftSider: FC = () => {
    */
   const handleMenu: MenuClickEventHandler = (e): void => {
     const { key } = e;
-    history.push(key as string);
+    if (currentPath !== key) {
+      history.push(key as string);
+    }
   };
   const handleRenderDefaultOpenKeys = (): Pathname[] => {
     if (
