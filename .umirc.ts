@@ -5,6 +5,9 @@ export default defineConfig({
   nodeModulesTransform: {
     type: 'none',
   },
+  antd: {
+    dark: true,
+  },
   dva: {
     immer: true,
     hmr: false,

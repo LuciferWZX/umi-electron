@@ -21,7 +21,7 @@ function createWindow() {
   });
   if (isDevelopment) {
     mainWindow.webContents.openDevTools();
-    mainWindow.loadURL('http://localhost:8001');
+    mainWindow.loadURL('http://localhost:8000');
   } else {
     createProtocol('app');
     mainWindow.loadURL('app://./index.html');
