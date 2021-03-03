@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { Layout } from 'antd';
 import { overflowEclipse } from '@/mixin/textMixin';
 export const StyledSider = styled(Layout.Sider)`
+  ${overflowEclipse()}
   .left-menu {
     background-color: #282d2f;
     color: #868e8e;
@@ -33,7 +34,7 @@ export const StyledSider = styled(Layout.Sider)`
   .ant-menu-vertical-left {
     border-right-color: transparent;
   }
-  .ant-menu-item + .ant-menu-item-selected {
+  .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
     color: white !important;
   }
   .ant-menu-sub.ant-menu-inline {

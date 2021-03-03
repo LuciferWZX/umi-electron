@@ -6,4 +6,6 @@ export const StyledBasicLayout = styled(Layout)`
 `;
 export const StyledContent = styled(Content)`
   height: 100%;
+  position: relative;
+  overflow: hidden;
 `;
