@@ -1,8 +1,20 @@
 import React, { FC } from 'react';
 import { StyledIdCardUpload, StyledInfoContent, StyledUpload } from './style';
-import { Col, Form, Input, Row, Select } from 'antd';
+import {
+  Button,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Row,
+  Select,
+  Space,
+  Table,
+  Tag,
+} from 'antd';
 import { useReactive } from 'ahooks';
 import { UploadFile } from 'antd/es/upload/interface';
+import { ColumnsType } from 'antd/lib/table/interface';
 interface IState {
   //form的布局
   formLayout: {
@@ -15,14 +27,61 @@ interface IState {
   };
 }
 interface FormProps {
+  //证件照
   workerPicture: UploadFile[];
+  //身份证照
   idPicture: UploadFile[];
+  //姓名
   name: string;
+  //身份证号码
   idNumber: string;
+  //工作种类
+  workCategory: string;
+  //银行卡号
+  bankCardNumber: string;
+  //工资卡开户银行
   depositBank: string;
+  //联系电话
   phone: string;
+  //地址
   address: string;
+  //工作技能等级
   skillLevel: string;
+  //备用联系人姓名
+  contactName: string;
+  //备用联系人联系电话
+  contactPhone: string;
+  //赡养老人(抵扣计量单位)
+  supportOldUnity: string;
+  //赡养老人(抵扣金额)
+  supportOldMoney: string;
+  //赡养老人(抵扣说明)
+  supportOldDescription: string;
+  //抚养小孩(抵扣计量单位)
+  raiseChildrenUnit: string;
+  //抚养小孩(抵扣金额)
+  raiseChildrenMoney: string;
+  //抚养小孩(抵扣说明)
+  raiseChildrenDescription: string;
+  //房租/房贷(抵扣计量单位)
+  houseRentUnit: string;
+  //房租/房贷(抵扣金额)
+  houseRentMoney: string;
+  //房租/房贷(抵扣说明)
+  houseRentDescription: string;
+  //继续教育(抵扣计量单位)
+  continueEducationUnit: string;
+  //继续教育(抵扣金额)
+  continueEducationMoney: string;
+  //继续教育(抵扣说明)
+  continueEducationDescription: string;
+}
+interface DeductionDataType {
+  id: number;
+  deductionProject: React.ReactNode;
+  deductionUnit: React.ReactNode;
+  deductionMoney: React.ReactNode;
+  deductionDescription: React.ReactNode;
 }
 const { Option } = Select;
 const InfoContent: FC = () => {
@@ -57,6 +116,125 @@ const InfoContent: FC = () => {
   const onFinish = (values: FormProps): void => {
     console.log(values);
   };
+  /**
+   * todo
+   * 用来表格的column
+   */
+  const columns: ColumnsType<DeductionDataType> = [
+    {
+      title: '抵扣项目',
+      dataIndex: 'deductionProject',
+      width: 100,
+    },
+    {
+      title: '抵扣计量单位',
+      dataIndex: 'deductionUnit',
+      width: 130,
+    },
+    {
+      title: '抵扣金额',
+      dataIndex: 'deductionMoney',
+      width: 200,
+    },
+    {
+      title: '抵扣说明',
+      dataIndex: 'deductionDescription',
+    },
+  ];
+  /**
+   * todo
+   * 表格的数据
+   */
+  const dataSource: DeductionDataType[] = [
+    {
+      id: 0,
+      deductionProject: '赡养老人',
+      deductionUnit: (
+        <Form.Item name={'supportOldUnity'} noStyle={true}>
+          <Input />
+        </Form.Item>
+      ),
+      deductionMoney: (
+        <Form.Item name={'supportOldMoney'} noStyle={true}>
+          <Input />
+        </Form.Item>
+      ),
+      deductionDescription: (
+        <Form.Item name={'supportOldDescription'} noStyle={true}>
+          <Input.TextArea
+            autoSize={{ minRows: 2, maxRows: 2 }}
+            allowClear={true}
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      id: 1,
+      deductionProject: '抚养小孩',
+      deductionUnit: (
+        <Form.Item name={'raiseChildrenUnit'} noStyle={true}>
+          <Input />
+        </Form.Item>
+      ),
+      deductionMoney: (
+        <Form.Item name={'raiseChildrenMoney'} noStyle={true}>
+          <Input />
+        </Form.Item>
+      ),
+      deductionDescription: (
+        <Form.Item name={'raiseChildrenDescription'} noStyle={true}>
+          <Input.TextArea
+            autoSize={{ minRows: 2, maxRows: 2 }}
+            allowClear={true}
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      id: 2,
+      deductionProject: '房租/房贷',
+      deductionUnit: (
+        <Form.Item name={'houseRentUnit'} noStyle={true}>
+          <Input />
+        </Form.Item>
+      ),
+      deductionMoney: (
+        <Form.Item name={'houseRentMoney'} noStyle={true}>
+          <Input />
+        </Form.Item>
+      ),
+      deductionDescription: (
+        <Form.Item name={'houseRentDescription'} noStyle={true}>
+          <Input.TextArea
+            autoSize={{ minRows: 2, maxRows: 2 }}
+            allowClear={true}
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      id: 3,
+      deductionProject: '继续教育',
+      deductionUnit: (
+        <Form.Item name={'continueEducationUnit'} noStyle={true}>
+          <Input />
+        </Form.Item>
+      ),
+      deductionMoney: (
+        <Form.Item name={'continueEducationMoney'} noStyle={true}>
+          <Input />
+        </Form.Item>
+      ),
+      deductionDescription: (
+        <Form.Item name={'continueEducationDescription'} noStyle={true}>
+          <Input.TextArea
+            autoSize={{ minRows: 2, maxRows: 2 }}
+            allowClear={true}
+          />
+        </Form.Item>
+      ),
+    },
+  ];
   return (
     <StyledInfoContent>
       <Form
@@ -69,7 +247,11 @@ const InfoContent: FC = () => {
         }}
       >
         <Row gutter={[20, 0]}>
-          {/*<Button htmlType={'submit'}>提交</Button>*/}
+          <Col span={24}>
+            <Divider orientation={'left'} type={'horizontal'}>
+              <Tag color={'cyan'}>个人信息</Tag>
+            </Divider>
+          </Col>
           <Col span={12} style={{ height: 254, overflow: 'hidden' }}>
             <Form.Item
               label="证件照"
@@ -197,6 +379,23 @@ const InfoContent: FC = () => {
           </Col>
           <Col span={12}>
             <Form.Item
+              name={'bankCardNumber'}
+              label={'银行卡号'}
+              rules={[
+                { required: true, message: '请输入银行卡号' },
+                { whitespace: true, message: '请输入银行卡号' },
+              ]}
+            >
+              <Input placeholder={'请输入银行卡号'} allowClear={true} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item style={{ marginBottom: 0 }} label={'员工号'}>
+              <Tag color="blue">338921</Tag>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
               name={'phone'}
               label={'联系电话'}
               rules={[
@@ -290,12 +489,53 @@ const InfoContent: FC = () => {
               </Select>
             </Form.Item>
           </Col>
+          <Col span={24}>
+            <Divider orientation={'left'} type={'horizontal'}>
+              <Tag color={'cyan'}>备用联系人</Tag>
+            </Divider>
+          </Col>
           <Col span={12}>
-            <Form.Item label={'员工号'}>338921</Form.Item>
+            <Form.Item name={'contactName'} label={'姓名'}>
+              <Input placeholder={'请输入联系人姓名'} allowClear={true} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name={'contactPhone'}
+              label={'联系人电话'}
+              rules={[
+                { required: true, message: '请输入联系人电话' },
+                { whitespace: true, message: '请输入联系人电话' },
+              ]}
+            >
+              <Input placeholder={'请输入联系人电话'} allowClear={true} />
+            </Form.Item>
+          </Col>
+          <Col span={24}>
+            <Divider orientation={'left'} type={'horizontal'}>
+              <Tag color={'cyan'}>个税抵扣信息</Tag>
+            </Divider>
+          </Col>
+          <Col span={24}>
+            <Table
+              pagination={false}
+              bordered
+              rowKey={(record) => record.id}
+              size={'small'}
+              dataSource={dataSource}
+              columns={columns}
+            />
+          </Col>
+          <Col span={24} style={{ marginTop: 10, textAlign: 'right' }}>
+            <Space>
+              <Button>重置</Button>
+              <Button type={'primary'} htmlType={'submit'}>
+                提交
+              </Button>
+            </Space>
           </Col>
         </Row>
       </Form>
-      InfoContent
     </StyledInfoContent>
   );
 };
