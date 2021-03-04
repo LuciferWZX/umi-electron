@@ -21,10 +21,10 @@ function createWindow() {
   });
   if (isDevelopment) {
     mainWindow.webContents.openDevTools();
-    mainWindow.loadURL('http://localhost:8000');
+    mainWindow.loadURL('http://localhost:8001').then();
   } else {
     createProtocol('app');
-    mainWindow.loadURL('app://./index.html');
+    mainWindow.loadURL('app://./index.html').then();
   }
 }
 

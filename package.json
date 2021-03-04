@@ -25,14 +25,14 @@
     ]
   },
   "dependencies": {
-    "@ant-design/icons": "^4.5.0",
+    "@ant-design/icons": "4.5.0",
     "@ant-design/pro-layout": "6.14.4",
-    "@types/styled-components": "^5.1.7",
     "@umijs/preset-react": "1.x",
-    "ahooks": "^2.9.6",
+    "ahooks": "2.9.6",
     "antd": "4.12.3",
-    "react-transition-group": "^4.4.1",
-    "styled-components": "^5.2.1",
+    "pinyin-match": "1.2.1",
+    "react-transition-group": "4.4.1",
+    "styled-components": "5.2.1",
     "umi": "3.3.9"
   },
   "devDependencies": {
@@ -48,6 +48,7 @@
     "lint-staged": "10.5.4",
     "prettier": "2.2.1",
     "react": "17.x",
+    "@types/styled-components": "5.1.7",
     "react-dom": "17.x",
     "typescript": "4.2.2",
     "umi-plugin-electron-builder": "1.0.18",

@@ -8,6 +8,10 @@ export default defineConfig({
   antd: {
     dark: true,
   },
+  locale: {
+    default: 'zh-CN',
+    antd: true,
+  },
   dva: {
     immer: true,
     hmr: false,
