@@ -4,8 +4,29 @@ import {
   MenuBoxItem,
 } from '@/layouts/basicLayout/header/style';
 import MyIcon from '@/components';
-import { Badge } from 'antd';
+import { Badge, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 const HorizonMenu: FC = () => {
+  /**
+   * todo
+   * 处理退出登录
+   */
+  const handleLogout = (): void => {
+    Modal.confirm({
+      title: '你确定要退出登录吗?',
+      icon: <MyIcon type={'icon-jinggao'} style={{ color: 'red' }} />,
+      content: '退出登录之后需要重新登录才能使用。',
+      onOk() {
+        return new Promise((resolve, reject) => {
+          setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
+        }).catch(() => console.log('Oops errors!'));
+      },
+      okButtonProps: {
+        danger: true,
+      },
+      onCancel() {},
+    });
+  };
   return (
     <HorizonMenuBox>
       <MenuBoxItem>欢迎你，{`admin`}</MenuBoxItem>
@@ -14,7 +35,7 @@ const HorizonMenu: FC = () => {
           <MyIcon type={'icon-email'} className={'horizon-menu-icon'} />
         </Badge>
       </MenuBoxItem>
-      <MenuBoxItem>
+      <MenuBoxItem onClick={handleLogout}>
         <MyIcon type={'icon-logout'} />
         退出
       </MenuBoxItem>

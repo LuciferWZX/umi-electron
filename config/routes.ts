@@ -52,6 +52,17 @@ const routes: Route[] = [
           },
         ],
       },
+      {
+        path: '/entrance',
+        component: '@/layouts/userLayout',
+        routes: [
+          { redirect: '/entrance/login', path: '/entrance' },
+          {
+            path: '/entrance/login',
+            component: '@/pages/entrance/login',
+          },
+        ],
+      },
     ],
   },
 ];
