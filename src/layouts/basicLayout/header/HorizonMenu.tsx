@@ -5,7 +5,7 @@ import {
 } from '@/layouts/basicLayout/header/style';
 import MyIcon from '@/components';
 import { Badge, Modal } from 'antd';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { history } from 'umi';
 const HorizonMenu: FC = () => {
   /**
    * todo
@@ -17,6 +17,7 @@ const HorizonMenu: FC = () => {
       icon: <MyIcon type={'icon-jinggao'} style={{ color: 'red' }} />,
       content: '退出登录之后需要重新登录才能使用。',
       onOk() {
+        history.push('/entrance/login');
         return new Promise((resolve, reject) => {
           setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
         }).catch(() => console.log('Oops errors!'));
