@@ -1,11 +1,15 @@
 import React, { FC } from 'react';
 import { StyledLogin } from '@/pages/entrance/login/style';
 import { Button, Checkbox, Form, Input, message } from 'antd';
-import { useRequest } from 'ahooks';
+import { useLockFn, useMount, useRequest } from 'ahooks';
+import store from 'storejs';
 import { LoginParams } from '@/types/account.request';
 import { useDispatch } from '@@/plugin-dva/exports';
 import { ResResponse } from '@/types/common.interface';
-import { CodeStatus } from '@/types/common.enum';
+import { CodeStatus, StoreKey } from '@/types/common.enum';
+import { Account } from '@/schemas/account';
+import { history } from 'umi';
+import { useModel } from '@@/plugin-model/useModel';
 interface FormProps {
   accountUsername: string;
   accountPassword: string;
@@ -15,10 +19,14 @@ interface FormProps {
 export const Login: FC = () => {
   const [form] = Form.useForm<FormProps>();
   const dispatch = useDispatch();
+  const { setAccount } = useModel('@@initialState', (model) => {
+    return {
+      setAccount: model.setInitialState,
+    };
+  });
   //登录的请求
   const loginRequest = useRequest(
     (params: LoginParams) => {
-      console.log(11);
       return dispatch({
         type: 'account/login',
         payload: params,
@@ -31,16 +39,42 @@ export const Login: FC = () => {
    * 点击提交触发该方法
    * @param values
    */
-  const onFinish = async (values: FormProps): Promise<void> => {
-    const { accountUsername, accountPassword } = values;
+  const onFinish = useLockFn(
+    async (values: FormProps): Promise<void> => {
+      const { accountUsername, accountPassword } = values;
+      const response: ResResponse<Account> = await loginRequest.run({
+        accountUsername: accountUsername,
+        accountPassword: accountPassword,
+      });
+      if (response.code === CodeStatus.Success) {
+        if (values.remember) {
+          store.set(StoreKey.password, values.accountPassword);
+        }
+        //存储用户信息
+        await store.set({
+          [StoreKey.remember]: values.remember,
+          [StoreKey.autoLogin]: values.autoLogin,
+          [StoreKey.account]: response.data,
+        });
+        setAccount(response.data);
+        //进行跳转
+        history.push('/');
+      }
+    },
+  );
 
-    const response: ResResponse<Account> = await loginRequest.run({
-      accountUsername: accountUsername,
-      accountPassword: accountPassword,
+  useMount(() => {
+    const accountPassword: string | undefined = store.get(StoreKey.password);
+    const autoLogin: boolean | undefined = store.get(StoreKey.autoLogin);
+    const remember: boolean | undefined = store.get(StoreKey.remember);
+    const account: Account | undefined = store.get(StoreKey.account);
+    form.setFieldsValue({
+      accountUsername: account?.accountUsername || '',
+      accountPassword: accountPassword || '',
+      autoLogin: autoLogin ? autoLogin : false,
+      remember: remember ? remember : false,
     });
-    if (response.code === CodeStatus.Success) {
-    }
-  };
+  });
   return (
     <StyledLogin>
       <Form
@@ -68,7 +102,7 @@ export const Login: FC = () => {
           name={'accountPassword'}
           rules={[{ required: true, message: '请输入密码' }]}
         >
-          <Input placeholder={'密码'} />
+          <Input.Password placeholder={'密码'} />
         </Form.Item>
         <Form.Item>
           <Form.Item name="remember" valuePropName="checked" noStyle>

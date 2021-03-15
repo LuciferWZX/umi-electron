@@ -28,6 +28,7 @@ const routes: Route[] = [
       {
         path: '/basic',
         component: '@/layouts/basicLayout',
+        wrappers: ['@/wrappers/verifyAccount.tsx'],
         routes: [
           { redirect: '/basic/home', path: '/basic' },
           {
@@ -55,6 +56,7 @@ const routes: Route[] = [
       {
         path: '/entrance',
         component: '@/layouts/userLayout',
+        wrappers: ['@/wrappers/clearAccount.tsx'],
         routes: [
           { redirect: '/entrance/login', path: '/entrance' },
           {

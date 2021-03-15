@@ -1,5 +1,7 @@
 import { extend, RequestOptionsInit, ResponseError } from 'umi-request';
 import { ResponseStatus } from '@/types/common.enum';
+import store from 'storejs';
+import { Account } from '@/schemas/account';
 
 /**
  * todo
@@ -9,6 +11,9 @@ import { ResponseStatus } from '@/types/common.enum';
 const errorHandler = (err: ResponseError): Response => {
   const { response, data } = err;
   switch (response.status) {
+    case ResponseStatus.created: {
+      return data;
+    }
     case ResponseStatus.Unauthorized: {
       return data;
     }
@@ -34,7 +39,16 @@ const request = extend({
  * 发出请求前拦截
  */
 request.interceptors.request.use((url, options): any => {
-  console.log('请求request:', { url, options });
+  //console.log('请求request:', { url, options });
+  const account: Account = store.get('account');
+  let token = '';
+  if (account) {
+    token = account.token;
+  }
+  options.headers = {
+    ...options.headers,
+    token: token,
+  };
 });
 /**
  * todo
@@ -42,7 +56,7 @@ request.interceptors.request.use((url, options): any => {
  */
 request.interceptors.response.use(
   (response, options): Response => {
-    console.log('返回response:', { response, options });
+    //console.log('返回response:', { response, options });
     return response;
   },
 );

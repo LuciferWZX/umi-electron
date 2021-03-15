@@ -12,7 +12,7 @@ const ANIMATION_MAP: any = {
 interface IProps extends RouteComponentProps {}
 const BasicLayout: FC<IProps> = ({ children, location, history }) => {
   return (
-    <StyledBasicLayout>
+    <StyledBasicLayout style={{ height: '100vh' }}>
       <TopHeader />
       <StyledBasicLayout>
         <LeftSider />

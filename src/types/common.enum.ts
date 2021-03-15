@@ -15,6 +15,7 @@ export enum MethodType {
   post = 'POST',
 }
 export enum ResponseStatus {
+  created = 201,
   //无权限
   Unauthorized = 401,
   //请求超时
@@ -22,4 +23,10 @@ export enum ResponseStatus {
 }
 export enum CodeStatus {
   Success = 0,
+}
+export enum StoreKey {
+  remember = 'remember',
+  password = 'password',
+  autoLogin = 'autoLogin',
+  account = 'account',
 }

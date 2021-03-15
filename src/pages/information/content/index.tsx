@@ -268,6 +268,7 @@ const InfoContent: FC = () => {
                     valuePropName="fileList"
                     getValueFromEvent={workerPictureEvent}
                     noStyle
+                    rules={[{ required: true, message: '请上传证件照' }]}
                   >
                     <StyledUpload
                       accept={'.png,.jpg,.svg'}
@@ -300,6 +301,7 @@ const InfoContent: FC = () => {
                     name="idPicture"
                     valuePropName="fileList"
                     getValueFromEvent={workerPictureEvent}
+                    rules={[{ required: true, message: '请上传身份证照片' }]}
                     noStyle
                   >
                     <StyledIdCardUpload
@@ -412,6 +414,10 @@ const InfoContent: FC = () => {
               wrapperCol={{ span: 20 }}
               label={'地址'}
               name={'address'}
+              rules={[
+                { required: true, message: '请输入地址' },
+                { whitespace: true, message: '请输入地址' },
+              ]}
             >
               <Input.TextArea
                 placeholder="请输入地址"
@@ -426,7 +432,7 @@ const InfoContent: FC = () => {
             <Form.Item
               name={'skillLevel'}
               label={'工作技能等级'}
-              rules={[{ required: true, message: '请选择工作技能等级' }]}
+              //rules={[{ required: true, message: '请选择工作技能等级' }]}
             >
               <Select
                 showSearch
@@ -495,7 +501,14 @@ const InfoContent: FC = () => {
             </Divider>
           </Col>
           <Col span={12}>
-            <Form.Item name={'contactName'} label={'姓名'}>
+            <Form.Item
+              name={'contactName'}
+              label={'姓名'}
+              rules={[
+                { required: true, message: '请输入姓名' },
+                { whitespace: true, message: '请输入姓名' },
+              ]}
+            >
               <Input placeholder={'请输入联系人姓名'} allowClear={true} />
             </Form.Item>
           </Col>

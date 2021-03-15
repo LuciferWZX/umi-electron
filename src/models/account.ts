@@ -15,6 +15,7 @@ export interface AccountModelType {
   };
   reducers: {
     save: ImmerReducer<AccountModelState>;
+    clear: ImmerReducer<AccountModelState>;
   };
 }
 const accountModel: AccountModelType = {
@@ -46,6 +47,7 @@ const accountModel: AccountModelType = {
         state[key] = payload[key];
       });
     },
+    clear(state, _) {},
   },
 };
 export default accountModel;
