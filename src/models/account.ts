@@ -3,6 +3,7 @@ import { login } from '@/services/account';
 import { ResResponse } from '@/types/common.interface';
 import { CodeStatus } from '@/types/common.enum';
 import { message } from 'antd';
+import { createUser } from '@/services/user';
 
 export interface AccountModelState {
   account: Account | null;
@@ -12,6 +13,7 @@ export interface AccountModelType {
   state: AccountModelState;
   effects: {
     login: Effect;
+    createUser: Effect;
   };
   reducers: {
     save: ImmerReducer<AccountModelState>;
@@ -24,6 +26,12 @@ const accountModel: AccountModelType = {
     account: null,
   },
   effects: {
+    /**
+     * todo 登录
+     * @param payload
+     * @param call
+     * @param put
+     */
     *login({ payload }, { call, put }) {
       const response: ResResponse<Account> = yield call(login, payload);
       if (response.code === CodeStatus.Success) {
@@ -38,6 +46,15 @@ const accountModel: AccountModelType = {
         message.error(response.message).then();
       }
       return response;
+    },
+    /**
+     * todo 新增工人
+     * @param payload
+     * @param call
+     */
+    *createUser({ payload }, { call }) {
+      const response = yield call(createUser, payload);
+      console.log(response);
     },
   },
   reducers: {

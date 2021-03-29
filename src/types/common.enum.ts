@@ -8,6 +8,7 @@ export enum Pathname {
 //请求的URL
 export enum URL {
   account = 'account',
+  user = 'user',
 }
 //请求的类型
 export enum MethodType {

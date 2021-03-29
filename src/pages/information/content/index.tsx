@@ -12,9 +12,18 @@ import {
   Table,
   Tag,
 } from 'antd';
-import { useReactive } from 'ahooks';
+import {
+  useLockFn,
+  useMount,
+  usePersistFn,
+  useReactive,
+  useRequest,
+} from 'ahooks';
 import { UploadFile } from 'antd/es/upload/interface';
 import { ColumnsType } from 'antd/lib/table/interface';
+import { useDispatch } from '@@/plugin-dva/exports';
+import { CreateUserParams } from '@/types/user.request';
+import { ReloadOutlined } from '@ant-design/icons';
 interface IState {
   //form的布局
   formLayout: {
@@ -25,6 +34,8 @@ interface IState {
       span: number;
     };
   };
+  //工人id
+  workId: string;
 }
 interface FormProps {
   //证件照
@@ -52,29 +63,29 @@ interface FormProps {
   //备用联系人联系电话
   contactPhone: string;
   //赡养老人(抵扣计量单位)
-  supportOldUnity: string;
+  supportOldUnity?: string;
   //赡养老人(抵扣金额)
-  supportOldMoney: string;
+  supportOldMoney?: number;
   //赡养老人(抵扣说明)
-  supportOldDescription: string;
+  supportOldDescription?: string;
   //抚养小孩(抵扣计量单位)
-  raiseChildrenUnit: string;
+  raiseChildrenUnit?: string;
   //抚养小孩(抵扣金额)
-  raiseChildrenMoney: string;
+  raiseChildrenMoney?: number;
   //抚养小孩(抵扣说明)
-  raiseChildrenDescription: string;
+  raiseChildrenDescription?: string;
   //房租/房贷(抵扣计量单位)
-  houseRentUnit: string;
+  houseRentUnit?: string;
   //房租/房贷(抵扣金额)
-  houseRentMoney: string;
+  houseRentMoney?: number;
   //房租/房贷(抵扣说明)
-  houseRentDescription: string;
+  houseRentDescription?: string;
   //继续教育(抵扣计量单位)
-  continueEducationUnit: string;
+  continueEducationUnit?: string;
   //继续教育(抵扣金额)
-  continueEducationMoney: string;
+  continueEducationMoney?: number;
   //继续教育(抵扣说明)
-  continueEducationDescription: string;
+  continueEducationDescription?: string;
 }
 interface DeductionDataType {
   id: number;
@@ -85,7 +96,8 @@ interface DeductionDataType {
 }
 const { Option } = Select;
 const InfoContent: FC = () => {
-  const { formLayout } = useReactive<IState>({
+  const dispatch = useDispatch();
+  const state = useReactive<IState>({
     formLayout: {
       labelCol: {
         span: 8,
@@ -94,8 +106,26 @@ const InfoContent: FC = () => {
         span: 16,
       },
     },
+    workId: '',
   });
   const [form] = Form.useForm<FormProps>();
+  //新增工人的请求
+  const createUserRequest = useRequest(
+    (params: CreateUserParams) => {
+      return dispatch({
+        type: 'account/createUser',
+        payload: params,
+      });
+    },
+    { manual: true },
+  );
+
+  /**
+   * todo 初始化数据（生成工号）
+   */
+  useMount(() => {
+    state.workId = generateWorkId();
+  });
   /**
    * todo
    * 处理上传证件照
@@ -108,14 +138,81 @@ const InfoContent: FC = () => {
     }
     return e && e.fileList;
   };
+
+  /**
+   * todo 刷新工号
+   */
+  const refreshWorkId = usePersistFn(() => {
+    state.workId = generateWorkId();
+  });
+
   /**
    * todo
    * 提交保存数据
    * @param values
    */
-  const onFinish = (values: FormProps): void => {
-    console.log(values);
-  };
+  const onFinish = useLockFn(
+    async (values: FormProps): Promise<void> => {
+      // const workPictureFile = dataURLtoFile(values.workerPicture[0].thumbUrl,values.workerPicture[0].name)
+      // const idPictureFile = dataURLtoFile(values.idPicture[0].thumbUrl,values.idPicture[0].name)
+      // console.log(1,workPictureFile);
+      // console.log(2,idPictureFile);
+      createUserRequest
+        .run({
+          //证件照
+          workerPicture: values.workerPicture[0].originFileObj,
+          //工人id
+          workId: state.workId,
+          //身份证照
+          idPicture: values.idPicture[0].originFileObj,
+          //姓名
+          name: values.name,
+          //身份证号码
+          idNumber: values.idNumber,
+          //工作种类
+          workCategory: values.workCategory,
+          //银行卡号
+          bankCardNumber: values.bankCardNumber,
+          //工资卡开户银行
+          depositBank: values.depositBank,
+          //联系电话
+          phone: values.phone,
+          //地址
+          address: values.address,
+          //工作技能等级
+          skillLevel: values.skillLevel,
+          //备用联系人姓名
+          contactName: values.contactName,
+          //备用联系人联系电话
+          contactPhone: values.contactPhone,
+          //赡养老人(抵扣计量单位)
+          supportOldUnity: values.supportOldUnity,
+          //赡养老人(抵扣金额)
+          supportOldMoney: values.supportOldMoney,
+          //赡养老人(抵扣说明)
+          supportOldDescription: values.supportOldDescription,
+          //抚养小孩(抵扣计量单位)
+          raiseChildrenUnit: values.raiseChildrenUnit,
+          //抚养小孩(抵扣金额)
+          raiseChildrenMoney: values.raiseChildrenMoney,
+          //抚养小孩(抵扣说明)
+          raiseChildrenDescription: values.raiseChildrenDescription,
+          //房租/房贷(抵扣计量单位)
+          houseRentUnit: values.houseRentUnit,
+          //房租/房贷(抵扣金额)
+          houseRentMoney: values.houseRentMoney,
+          //房租/房贷(抵扣说明)
+          houseRentDescription: values.houseRentDescription,
+          //继续教育(抵扣计量单位)
+          continueEducationUnit: values.continueEducationUnit,
+          //继续教育(抵扣金额)
+          continueEducationMoney: values.continueEducationMoney,
+          //继续教育(抵扣说明)
+          continueEducationDescription: values.continueEducationDescription,
+        })
+        .then();
+    },
+  );
   /**
    * todo
    * 用来表格的column
@@ -238,7 +335,7 @@ const InfoContent: FC = () => {
   return (
     <StyledInfoContent>
       <Form
-        {...formLayout}
+        {...state.formLayout}
         onFinish={onFinish}
         form={form}
         initialValues={{
@@ -276,6 +373,9 @@ const InfoContent: FC = () => {
                       listType="picture-card"
                       maxCount={1}
                       action="/upload.do"
+                      beforeUpload={() => {
+                        return false;
+                      }}
                     >
                       {workerPicture.length === 0 ? (
                         <div style={{ color: 'white' }}>上传证件照</div>
@@ -326,6 +426,8 @@ const InfoContent: FC = () => {
               label={'姓名'}
               rules={[
                 { required: true, message: '请输入姓名' },
+                { max: 20, message: '姓名不超过20个字符串' },
+                { min: 2, message: '姓名不能少于2个字符串' },
                 { whitespace: true, message: '请输入姓名' },
               ]}
             >
@@ -338,6 +440,7 @@ const InfoContent: FC = () => {
               label={'身份证号码'}
               rules={[
                 { required: true, message: '请输入身份证号码' },
+                { len: 18, message: '请输入18位身份证号码' },
                 { whitespace: true, message: '请输入身份证号码' },
               ]}
             >
@@ -386,6 +489,7 @@ const InfoContent: FC = () => {
               rules={[
                 { required: true, message: '请输入银行卡号' },
                 { whitespace: true, message: '请输入银行卡号' },
+                { max: 25, message: '银行卡最多不超过25位' },
               ]}
             >
               <Input placeholder={'请输入银行卡号'} allowClear={true} />
@@ -393,7 +497,15 @@ const InfoContent: FC = () => {
           </Col>
           <Col span={12}>
             <Form.Item style={{ marginBottom: 0 }} label={'员工号'}>
-              <Tag color="blue">338921</Tag>
+              <Tag color="blue">{state.workId}</Tag>{' '}
+              <Button
+                onClick={refreshWorkId}
+                type={'link'}
+                size={'small'}
+                icon={<ReloadOutlined />}
+              >
+                刷新工号
+              </Button>
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -403,6 +515,7 @@ const InfoContent: FC = () => {
               rules={[
                 { required: true, message: '请输入联系电话' },
                 { whitespace: true, message: '请输入联系电话' },
+                { max: 13, message: '电话号码不超过13位' },
               ]}
             >
               <Input placeholder={'请输入联系电话'} allowClear={true} />
@@ -417,6 +530,8 @@ const InfoContent: FC = () => {
               rules={[
                 { required: true, message: '请输入地址' },
                 { whitespace: true, message: '请输入地址' },
+                { max: 255, message: '地址最大输入255个字符串' },
+                { min: 5, message: '地址最少5个字符串' },
               ]}
             >
               <Input.TextArea
@@ -505,8 +620,10 @@ const InfoContent: FC = () => {
               name={'contactName'}
               label={'姓名'}
               rules={[
-                { required: true, message: '请输入姓名' },
-                { whitespace: true, message: '请输入姓名' },
+                { required: true, message: '请输入联系人姓名' },
+                { whitespace: true, message: '请输入联系人姓名' },
+                { max: 20, message: '联系人姓名不超过20个字符串' },
+                { min: 2, message: '联系人姓名不能少于2个字符串' },
               ]}
             >
               <Input placeholder={'请输入联系人姓名'} allowClear={true} />
@@ -519,6 +636,7 @@ const InfoContent: FC = () => {
               rules={[
                 { required: true, message: '请输入联系人电话' },
                 { whitespace: true, message: '请输入联系人电话' },
+                { max: 13, message: '电话号码不超过13位' },
               ]}
             >
               <Input placeholder={'请输入联系人电话'} allowClear={true} />
@@ -551,5 +669,15 @@ const InfoContent: FC = () => {
       </Form>
     </StyledInfoContent>
   );
+};
+/**
+ * todo 生成随机6位工号
+ */
+const generateWorkId = (): string => {
+  let workId = '';
+  for (let i = 0; i < 6; i++) {
+    workId += Math.floor(Math.random() * 10);
+  }
+  return workId;
 };
 export default InfoContent;

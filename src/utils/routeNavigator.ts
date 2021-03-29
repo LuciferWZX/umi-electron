@@ -10,6 +10,5 @@ export function navigatorToEntrance(
   actionType: 'push' | 'replace' = 'push',
   path: '/entrance/login' = '/entrance/login',
 ): void {
-  console.log(actionType, path);
   history[actionType](path);
 }
