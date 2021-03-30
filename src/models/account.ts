@@ -50,7 +50,7 @@ const accountModel: AccountModelType = {
     },
   },
   reducers: {
-    save(state, payload) {
+    save(state, { payload }) {
       Object.getOwnPropertyNames(payload).forEach((key) => {
         // @ts-ignore
         state[key] = payload[key];

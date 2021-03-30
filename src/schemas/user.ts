@@ -1,9 +1,11 @@
-export interface CreateUserParams {
+export interface User {
+  id: string;
+  //工号
   workId: string;
   //证件照
-  workerPicture: File | Blob | undefined;
+  workerPicture: File;
   //身份证照
-  idPicture: File | Blob | undefined;
+  idPicture: File;
   //姓名
   name: string;
   //身份证号码
@@ -25,28 +27,29 @@ export interface CreateUserParams {
   //备用联系人联系电话
   contactPhone: string;
   //赡养老人(抵扣计量单位)
-  supportOldUnity?: string;
+  supportOldUnity: string;
   //赡养老人(抵扣金额)
-  supportOldMoney?: number;
+  supportOldMoney: number;
   //赡养老人(抵扣说明)
-  supportOldDescription?: string;
+  supportOldDescription: string;
   //抚养小孩(抵扣计量单位)
-  raiseChildrenUnit?: string;
+  raiseChildrenUnit: string;
   //抚养小孩(抵扣金额)
-  raiseChildrenMoney?: number;
+  raiseChildrenMoney: number;
   //抚养小孩(抵扣说明)
-  raiseChildrenDescription?: string;
+  raiseChildrenDescription: string;
   //房租/房贷(抵扣计量单位)
-  houseRentUnit?: string;
+  houseRentUnit: string;
   //房租/房贷(抵扣金额)
-  houseRentMoney?: number;
+  houseRentMoney: number;
   //房租/房贷(抵扣说明)
-  houseRentDescription?: string;
+  houseRentDescription: string;
   //继续教育(抵扣计量单位)
-  continueEducationUnit?: string;
+  continueEducationUnit: string;
   //继续教育(抵扣金额)
-  continueEducationMoney?: number;
+  continueEducationMoney: number;
   //继续教育(抵扣说明)
-  continueEducationDescription?: string;
+  continueEducationDescription: string;
+  //创建人的id
+  createdId: string;
 }
-export type CreateUserParamsKey = keyof CreateUserParams;

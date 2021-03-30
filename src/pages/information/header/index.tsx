@@ -1,10 +1,11 @@
-import React, { FC } from 'react';
+import React, { FC, memo } from 'react';
 import { Row, Typography } from 'antd';
 import { Content } from 'antd/es/layout/layout';
 import { StyledHeader } from '@/pages/information/header/style';
 import MyIcon from '@/components';
 const { Paragraph } = Typography;
 const InfoHeader: FC = () => {
+  console.log('渲染3');
   const Content = ({
     children,
     extraContent,
@@ -45,4 +46,4 @@ const InfoHeader: FC = () => {
     </StyledHeader>
   );
 };
-export default InfoHeader;
+export default memo(InfoHeader);

@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, memo } from 'react';
 import { StyledIdCardUpload, StyledInfoContent, StyledUpload } from './style';
 import {
   Button,
@@ -6,6 +6,7 @@ import {
   Divider,
   Form,
   Input,
+  message,
   Row,
   Select,
   Space,
@@ -21,11 +22,13 @@ import {
 } from 'ahooks';
 import { UploadFile } from 'antd/es/upload/interface';
 import { ColumnsType } from 'antd/lib/table/interface';
-import { useDispatch } from '@@/plugin-dva/exports';
-import { CreateUserParams } from '@/types/user.request';
+import { useDispatch, useSelector } from '@@/plugin-dva/exports';
+import { CreateUserParams, CreateUserParamsKey } from '@/types/user.request';
 import { ReloadOutlined } from '@ant-design/icons';
 import { ResResponse } from '@/types/common.interface';
 import { CodeStatus } from '@/types/common.enum';
+import { ConnectState } from '@/models/connect';
+import { User } from '@/schemas/user';
 interface IState {
   //form的布局
   formLayout: {
@@ -89,6 +92,7 @@ interface FormProps {
   //继续教育(抵扣说明)
   continueEducationDescription?: string;
 }
+type FormKey = keyof FormProps;
 interface DeductionDataType {
   id: number;
   deductionProject: React.ReactNode;
@@ -98,7 +102,14 @@ interface DeductionDataType {
 }
 const { Option } = Select;
 const InfoContent: FC = () => {
+  console.log('渲染2');
   const dispatch = useDispatch();
+  const { banks } = useSelector(
+    (state: ConnectState) => state.information,
+    (left, right) => {
+      return left.banks === right.banks;
+    },
+  );
   const state = useReactive<IState>({
     formLayout: {
       labelCol: {
@@ -115,7 +126,7 @@ const InfoContent: FC = () => {
   const createUserRequest = useRequest(
     (params: CreateUserParams) => {
       return dispatch({
-        type: 'account/createUser',
+        type: 'information/createUser',
         payload: params,
       });
     },
@@ -123,20 +134,20 @@ const InfoContent: FC = () => {
   );
   //todo 查看字段值是否被使用
   const checkIsUsed = useRequest(
-    (params: { key: [keyof CreateUserParams]; value: any }) => {
+    (params: { key: CreateUserParamsKey; value: any }) => {
       return dispatch({
-        type: 'account/checkIsUsedByUser',
+        type: 'information/checkIsUsedByUser',
         payload: params,
       });
     },
-    { manual: true },
+    { manual: true, fetchKey: (param) => param.key },
   );
 
   /**
    * todo 初始化数据（生成工号）
    */
-  useMount(() => {
-    state.workId = generateWorkId();
+  useMount(async () => {
+    state.workId = await generateUniqWorkId();
   });
   /**
    * todo
@@ -154,9 +165,47 @@ const InfoContent: FC = () => {
   /**
    * todo 刷新工号
    */
-  const refreshWorkId = usePersistFn(() => {
-    state.workId = generateWorkId();
+  const refreshWorkId = usePersistFn(async () => {
+    state.workId = await generateUniqWorkId();
   });
+  /**
+   * todo 生成随机6位工号
+   */
+  const generateUniqWorkId = async (): Promise<string> => {
+    let workId = '';
+    //todo 生成workId
+    for (let i = 0; i < 6; i++) {
+      workId += Math.floor(Math.random() * 10);
+    }
+    //todo 验证workId是否重复
+    const checkIsUsedRes:
+      | ResResponse<Boolean>
+      | undefined = await checkIsUsed.run({ key: 'workId', value: workId });
+    if (
+      checkIsUsedRes &&
+      checkIsUsedRes.code === CodeStatus.Success &&
+      checkIsUsedRes.data
+    ) {
+      //todo 重复再次执行
+      return await generateUniqWorkId();
+    }
+    //todo 不重复返回workId
+    return workId;
+  };
+
+  /**
+   * todo 修复输入的值
+   * @param value
+   * @param field
+   */
+  const fixedInputValue = (value: any, field: FormKey): void => {
+    switch (field) {
+      case 'name': {
+        form.setFieldsValue({ [field]: value.replace(/\s/g, '') });
+        break;
+      }
+    }
+  };
 
   /**
    * todo
@@ -165,64 +214,71 @@ const InfoContent: FC = () => {
    */
   const onFinish = useLockFn(
     async (values: FormProps): Promise<void> => {
-      // const workPictureFile = dataURLtoFile(values.workerPicture[0].thumbUrl,values.workerPicture[0].name)
-      // const idPictureFile = dataURLtoFile(values.idPicture[0].thumbUrl,values.idPicture[0].name)
-      // console.log(1,workPictureFile);
-      // console.log(2,idPictureFile);
-      createUserRequest
-        .run({
-          //证件照
-          workerPicture: values.workerPicture[0].originFileObj,
-          //工人id
-          workId: state.workId,
-          //身份证照
-          idPicture: values.idPicture[0].originFileObj,
-          //姓名
-          name: values.name,
-          //身份证号码
-          idNumber: values.idNumber,
-          //工作种类
-          workCategory: values.workCategory,
-          //银行卡号
-          bankCardNumber: values.bankCardNumber,
-          //工资卡开户银行
-          depositBank: values.depositBank,
-          //联系电话
-          phone: values.phone,
-          //地址
-          address: values.address,
-          //工作技能等级
-          skillLevel: values.skillLevel,
-          //备用联系人姓名
-          contactName: values.contactName,
-          //备用联系人联系电话
-          contactPhone: values.contactPhone,
-          //赡养老人(抵扣计量单位)
-          supportOldUnity: values.supportOldUnity,
-          //赡养老人(抵扣金额)
-          supportOldMoney: values.supportOldMoney,
-          //赡养老人(抵扣说明)
-          supportOldDescription: values.supportOldDescription,
-          //抚养小孩(抵扣计量单位)
-          raiseChildrenUnit: values.raiseChildrenUnit,
-          //抚养小孩(抵扣金额)
-          raiseChildrenMoney: values.raiseChildrenMoney,
-          //抚养小孩(抵扣说明)
-          raiseChildrenDescription: values.raiseChildrenDescription,
-          //房租/房贷(抵扣计量单位)
-          houseRentUnit: values.houseRentUnit,
-          //房租/房贷(抵扣金额)
-          houseRentMoney: values.houseRentMoney,
-          //房租/房贷(抵扣说明)
-          houseRentDescription: values.houseRentDescription,
-          //继续教育(抵扣计量单位)
-          continueEducationUnit: values.continueEducationUnit,
-          //继续教育(抵扣金额)
-          continueEducationMoney: values.continueEducationMoney,
-          //继续教育(抵扣说明)
-          continueEducationDescription: values.continueEducationDescription,
-        })
-        .then();
+      const response:
+        | ResResponse<User>
+        | undefined = await createUserRequest.run({
+        //证件照
+        workerPicture: values.workerPicture[0].originFileObj,
+        //工人id
+        workId: state.workId,
+        //身份证照
+        idPicture: values.idPicture[0].originFileObj,
+        //姓名
+        name: values.name,
+        //身份证号码
+        idNumber: values.idNumber,
+        //工作种类
+        workCategory: values.workCategory,
+        //银行卡号
+        bankCardNumber: values.bankCardNumber,
+        //工资卡开户银行
+        depositBank: values.depositBank,
+        //联系电话
+        phone: values.phone,
+        //地址
+        address: values.address,
+        //工作技能等级
+        skillLevel: values.skillLevel,
+        //备用联系人姓名
+        contactName: values.contactName,
+        //备用联系人联系电话
+        contactPhone: values.contactPhone,
+        //赡养老人(抵扣计量单位)
+        supportOldUnity: values.supportOldUnity,
+        //赡养老人(抵扣金额)
+        supportOldMoney: values.supportOldMoney,
+        //赡养老人(抵扣说明)
+        supportOldDescription: values.supportOldDescription,
+        //抚养小孩(抵扣计量单位)
+        raiseChildrenUnit: values.raiseChildrenUnit,
+        //抚养小孩(抵扣金额)
+        raiseChildrenMoney: values.raiseChildrenMoney,
+        //抚养小孩(抵扣说明)
+        raiseChildrenDescription: values.raiseChildrenDescription,
+        //房租/房贷(抵扣计量单位)
+        houseRentUnit: values.houseRentUnit,
+        //房租/房贷(抵扣金额)
+        houseRentMoney: values.houseRentMoney,
+        //房租/房贷(抵扣说明)
+        houseRentDescription: values.houseRentDescription,
+        //继续教育(抵扣计量单位)
+        continueEducationUnit: values.continueEducationUnit,
+        //继续教育(抵扣金额)
+        continueEducationMoney: values.continueEducationMoney,
+        //继续教育(抵扣说明)
+        continueEducationDescription: values.continueEducationDescription,
+      });
+      if (response) {
+        if (response.code === CodeStatus.Success) {
+          message.success(
+            `${response.data.name} 员工创建成功，工号为：${response.data.workId}`,
+          );
+        } else {
+          message.error(
+            `${values.name} 员工创建失败，原因:${response.message}`,
+          );
+        }
+      }
     },
   );
   /**
@@ -397,7 +453,6 @@ const InfoContent: FC = () => {
                 );
               }}
             </Form.Item>
-            .
           </Col>
           <Col span={12} style={{ height: 254, overflow: 'hidden' }}>
             <Form.Item
@@ -442,13 +497,12 @@ const InfoContent: FC = () => {
                 { min: 2, message: '姓名不能少于2个字符串' },
                 { whitespace: true, message: '请输入姓名' },
               ]}
-              getValueFromEvent={(e: React.ChangeEvent<HTMLInputElement>) => {
-                const { value } = e.target;
-                //去除所有空格
-                return value.replace(/\s/g, '');
-              }}
             >
-              <Input placeholder={'请输入姓名'} allowClear={true} />
+              <Input
+                onBlur={(e) => fixedInputValue(e.target.value, 'name')}
+                placeholder={'请输入姓名'}
+                allowClear={true}
+              />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -465,12 +519,11 @@ const InfoContent: FC = () => {
                       if (value === '' || value === undefined) {
                         return reject(new Error('请输入身份证号码'));
                       }
-                      if (value.length === 18) {
+                      const ID_REG = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
+                      if (ID_REG.test(value)) {
                         checkIsUsed
                           .run({
-                            key: ('idNumber' as unknown) as [
-                              keyof CreateUserParams,
-                            ],
+                            key: 'idNumber',
                             value: value,
                           })
                           .then((res: ResResponse<boolean> | undefined) => {
@@ -486,7 +539,7 @@ const InfoContent: FC = () => {
                             }
                           });
                       } else {
-                        return reject(new Error('请输入18位身份证号码'));
+                        return reject(new Error('请输入正确的身份证号码'));
                       }
                     });
                   },
@@ -497,7 +550,6 @@ const InfoContent: FC = () => {
                 //去除所有空格
                 return value.replace(/\s/g, '');
               }}
-              validateTrigger={'onBlur'}
             >
               <Input placeholder={'请输入身份证号码'} allowClear={true} />
             </Form.Item>
@@ -514,6 +566,7 @@ const InfoContent: FC = () => {
                 placeholder="请选择开户银行"
                 allowClear={true}
                 optionFilterProp="children"
+                getPopupContainer={(triggerNode) => triggerNode.parentElement}
                 filterOption={(input, option) => {
                   //中文（拼音）匹配
                   const PinyinMatch = require('pinyin-match/lib/traditional.js');
@@ -528,12 +581,13 @@ const InfoContent: FC = () => {
                     .localeCompare(optionB.children.toLowerCase())
                 }
               >
-                <Option value="1">工种一</Option>
-                <Option value="2">工种二</Option>
-                <Option value="3">Communicated</Option>
-                <Option value="4">Identified</Option>
-                <Option value="5">Resolved</Option>
-                <Option value="6">Cancelled</Option>
+                {banks.map((bank) => {
+                  return (
+                    <Option key={bank.id} value={bank.id}>
+                      {bank.bankName}
+                    </Option>
+                  );
+                })}
               </Select>
             </Form.Item>
           </Col>
@@ -547,7 +601,13 @@ const InfoContent: FC = () => {
                 { max: 25, message: '银行卡最多不超过25位' },
               ]}
             >
-              <Input placeholder={'请输入银行卡号'} allowClear={true} />
+              <Input
+                onBlur={(e) =>
+                  fixedInputValue(e.target.value, 'bankCardNumber')
+                }
+                placeholder={'请输入银行卡号'}
+                allowClear={true}
+              />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -557,7 +617,11 @@ const InfoContent: FC = () => {
                 onClick={refreshWorkId}
                 type={'link'}
                 size={'small'}
-                icon={<ReloadOutlined />}
+                icon={
+                  <ReloadOutlined
+                    spin={checkIsUsed.fetches['workId']?.loading}
+                  />
+                }
               >
                 刷新工号
               </Button>
@@ -570,7 +634,10 @@ const InfoContent: FC = () => {
               rules={[
                 { required: true, message: '请输入联系电话' },
                 { whitespace: true, message: '请输入联系电话' },
-                { max: 13, message: '电话号码不超过13位' },
+                {
+                  pattern: /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/,
+                  message: '请输入正确的手机号码',
+                },
               ]}
             >
               <Input placeholder={'请输入联系电话'} allowClear={true} />
@@ -681,7 +748,11 @@ const InfoContent: FC = () => {
                 { min: 2, message: '联系人姓名不能少于2个字符串' },
               ]}
             >
-              <Input placeholder={'请输入联系人姓名'} allowClear={true} />
+              <Input
+                onBlur={(e) => fixedInputValue(e.target.value, 'contactName')}
+                placeholder={'请输入联系人姓名'}
+                allowClear={true}
+              />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -691,7 +762,10 @@ const InfoContent: FC = () => {
               rules={[
                 { required: true, message: '请输入联系人电话' },
                 { whitespace: true, message: '请输入联系人电话' },
-                { max: 13, message: '电话号码不超过13位' },
+                {
+                  pattern: /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/,
+                  message: '请输入正确的手机号码',
+                },
               ]}
             >
               <Input placeholder={'请输入联系人电话'} allowClear={true} />
@@ -715,8 +789,12 @@ const InfoContent: FC = () => {
           <Col span={24} style={{ marginTop: 10, textAlign: 'right' }}>
             <Space>
               <Button>重置</Button>
-              <Button type={'primary'} htmlType={'submit'}>
-                提交
+              <Button
+                type={'primary'}
+                loading={createUserRequest.loading}
+                htmlType={'submit'}
+              >
+                {createUserRequest.loading ? '提交中...' : '提交'}
               </Button>
             </Space>
           </Col>
@@ -725,14 +803,5 @@ const InfoContent: FC = () => {
     </StyledInfoContent>
   );
 };
-/**
- * todo 生成随机6位工号
- */
-const generateWorkId = (): string => {
-  let workId = '';
-  for (let i = 0; i < 6; i++) {
-    workId += Math.floor(Math.random() * 10);
-  }
-  return workId;
-};
-export default InfoContent;
+
+export default memo(InfoContent);

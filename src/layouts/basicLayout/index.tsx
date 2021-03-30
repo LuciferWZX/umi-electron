@@ -9,6 +9,7 @@ const ANIMATION_MAP: any = {
   PUSH: 'forward',
   POP: 'back',
 };
+
 interface IProps extends RouteComponentProps {}
 
 const BasicLayout: FC<IProps> = ({ children, location, history }) => {
@@ -17,7 +18,7 @@ const BasicLayout: FC<IProps> = ({ children, location, history }) => {
       <TopHeader />
       <StyledBasicLayout>
         <LeftSider />
-        <StyledContent id={'basic-content'}>
+        <StyledContent id={'basicContent'} className={''}>
           <TransitionGroup
             style={{ height: '100%' }}
             childFactory={(child: any) =>
