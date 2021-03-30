@@ -3,17 +3,17 @@ import { login } from '@/services/account';
 import { ResResponse } from '@/types/common.interface';
 import { CodeStatus } from '@/types/common.enum';
 import { message } from 'antd';
-import { createUser } from '@/services/user';
+import { Bank } from '@/schemas/bank';
 
 export interface AccountModelState {
   account: Account | null;
+  banks: Bank[];
 }
 export interface AccountModelType {
   namespace: 'account';
   state: AccountModelState;
   effects: {
     login: Effect;
-    createUser: Effect;
   };
   reducers: {
     save: ImmerReducer<AccountModelState>;
@@ -24,6 +24,7 @@ const accountModel: AccountModelType = {
   namespace: 'account',
   state: {
     account: null,
+    banks: [],
   },
   effects: {
     /**
@@ -46,15 +47,6 @@ const accountModel: AccountModelType = {
         message.error(response.message).then();
       }
       return response;
-    },
-    /**
-     * todo 新增工人
-     * @param payload
-     * @param call
-     */
-    *createUser({ payload }, { call }) {
-      const response = yield call(createUser, payload);
-      console.log(response);
     },
   },
   reducers: {

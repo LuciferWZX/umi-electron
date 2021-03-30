@@ -15,11 +15,19 @@ export async function login(params: LoginParams): Promise<any> {
 }
 
 /**
- * todo
- * 根据token获取用户存入redis的信息
+ * todo 根据token获取用户存入redis的信息
  */
 export async function fetchAccountInfo(): Promise<any> {
   return request(`${URL.account}/fetch_account_info`, {
+    method: MethodType.get,
+  });
+}
+
+/**
+ * todo 获取银行列表
+ */
+export async function findAllBank(): Promise<any> {
+  return request(`${URL.account}/find_all_bank`, {
     method: MethodType.get,
   });
 }

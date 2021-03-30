@@ -38,6 +38,7 @@ const routes: Route[] = [
           {
             path: '/basic/information',
             component: '@/pages/information',
+            wrappers: ['@/wrappers/informationWrapper.tsx'],
           },
           {
             path: '/basic/project/underway',

@@ -21,3 +21,17 @@ export async function createUser(params: CreateUserParams): Promise<any> {
     data: formData,
   });
 }
+
+/**
+ * todo 查看该字段是否被使用
+ * @param params
+ */
+export async function isUsed(params: {
+  key: [keyof CreateUserParams];
+  value: any;
+}): Promise<any> {
+  return request(`${URL.user}/isUsedByUser`, {
+    method: MethodType.get,
+    params: params,
+  });
+}

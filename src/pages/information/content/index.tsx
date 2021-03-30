@@ -24,6 +24,8 @@ import { ColumnsType } from 'antd/lib/table/interface';
 import { useDispatch } from '@@/plugin-dva/exports';
 import { CreateUserParams } from '@/types/user.request';
 import { ReloadOutlined } from '@ant-design/icons';
+import { ResResponse } from '@/types/common.interface';
+import { CodeStatus } from '@/types/common.enum';
 interface IState {
   //form的布局
   formLayout: {
@@ -109,11 +111,21 @@ const InfoContent: FC = () => {
     workId: '',
   });
   const [form] = Form.useForm<FormProps>();
-  //新增工人的请求
+  //todo 新增工人的请求
   const createUserRequest = useRequest(
     (params: CreateUserParams) => {
       return dispatch({
         type: 'account/createUser',
+        payload: params,
+      });
+    },
+    { manual: true },
+  );
+  //todo 查看字段值是否被使用
+  const checkIsUsed = useRequest(
+    (params: { key: [keyof CreateUserParams]; value: any }) => {
+      return dispatch({
+        type: 'account/checkIsUsedByUser',
         payload: params,
       });
     },
@@ -430,6 +442,11 @@ const InfoContent: FC = () => {
                 { min: 2, message: '姓名不能少于2个字符串' },
                 { whitespace: true, message: '请输入姓名' },
               ]}
+              getValueFromEvent={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const { value } = e.target;
+                //去除所有空格
+                return value.replace(/\s/g, '');
+              }}
             >
               <Input placeholder={'请输入姓名'} allowClear={true} />
             </Form.Item>
@@ -439,10 +456,48 @@ const InfoContent: FC = () => {
               name={'idNumber'}
               label={'身份证号码'}
               rules={[
-                { required: true, message: '请输入身份证号码' },
-                { len: 18, message: '请输入18位身份证号码' },
-                { whitespace: true, message: '请输入身份证号码' },
+                // { required: true, message: '请输入身份证号码' },
+                // { len: 18, message: '请输入18位身份证号码' },
+                // { whitespace: true, message: '请输入身份证号码' },
+                () => ({
+                  validator(_, value) {
+                    return new Promise((resolve, reject) => {
+                      if (value === '' || value === undefined) {
+                        return reject(new Error('请输入身份证号码'));
+                      }
+                      if (value.length === 18) {
+                        checkIsUsed
+                          .run({
+                            key: ('idNumber' as unknown) as [
+                              keyof CreateUserParams,
+                            ],
+                            value: value,
+                          })
+                          .then((res: ResResponse<boolean> | undefined) => {
+                            if (res) {
+                              if (res.code === CodeStatus.Success) {
+                                if (res.data) {
+                                  return reject(
+                                    new Error('该身份证号码已被使用'),
+                                  );
+                                }
+                                return resolve(res.data);
+                              }
+                            }
+                          });
+                      } else {
+                        return reject(new Error('请输入18位身份证号码'));
+                      }
+                    });
+                  },
+                }),
               ]}
+              getValueFromEvent={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const { value } = e.target;
+                //去除所有空格
+                return value.replace(/\s/g, '');
+              }}
+              validateTrigger={'onBlur'}
             >
               <Input placeholder={'请输入身份证号码'} allowClear={true} />
             </Form.Item>
