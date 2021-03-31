@@ -1,6 +1,6 @@
 import request from '@/utils/request';
 import { MethodType, URL } from '@/types/common.enum';
-import { CreateUserParams } from '@/types/user.request';
+import { CreateUserParams, IdentifyIDCardParams } from '@/types/user.request';
 
 /**
  * todo 新增一条工人记录
@@ -33,5 +33,16 @@ export async function isUsed(params: {
   return request(`${URL.user}/isUsedByUser`, {
     method: MethodType.get,
     params: params,
+  });
+}
+
+/**
+ * todo 进行身份证识别
+ * @param params
+ */
+export async function identifyIDCard(params: IdentifyIDCardParams) {
+  return request(`${URL.user}/identifyIDCard`, {
+    method: MethodType.post,
+    data: params,
   });
 }

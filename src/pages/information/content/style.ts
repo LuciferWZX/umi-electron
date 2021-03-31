@@ -8,6 +8,7 @@ export const StyledInfoContent = styled.div`
 `;
 export const StyledUpload = styled(Upload)`
   color: white;
+
   .ant-upload.ant-upload-select-picture-card {
     width: 140px;
     height: 200px;

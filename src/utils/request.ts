@@ -1,5 +1,5 @@
-import { extend, RequestOptionsInit, ResponseError } from 'umi-request';
-import { ResponseStatus } from '@/types/common.enum';
+import { extend, ResponseError } from 'umi-request';
+import { CodeStatus, ResponseStatus } from '@/types/common.enum';
 import store from 'storejs';
 import { Account } from '@/schemas/account';
 
@@ -12,6 +12,12 @@ const errorHandler = (err: ResponseError): Response => {
   const { response, data } = err;
   switch (response.status) {
     case ResponseStatus.created: {
+      return data;
+    }
+    case ResponseStatus.ServerError: {
+      if (data.code === CodeStatus.failed) {
+        return data;
+      }
       return data;
     }
     case ResponseStatus.Unauthorized: {

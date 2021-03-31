@@ -10,6 +10,7 @@ import {
   Row,
   Select,
   Space,
+  Spin,
   Table,
   Tag,
 } from 'antd';
@@ -23,7 +24,12 @@ import {
 import { UploadFile } from 'antd/es/upload/interface';
 import { ColumnsType } from 'antd/lib/table/interface';
 import { useDispatch, useSelector } from '@@/plugin-dva/exports';
-import { CreateUserParams, CreateUserParamsKey } from '@/types/user.request';
+import {
+  CreateUserParams,
+  CreateUserParamsKey,
+  IDCardOCRResponse,
+  IdentifyIDCardParams,
+} from '@/types/user.request';
 import { ReloadOutlined } from '@ant-design/icons';
 import { ResResponse } from '@/types/common.interface';
 import { CodeStatus } from '@/types/common.enum';
@@ -102,7 +108,6 @@ interface DeductionDataType {
 }
 const { Option } = Select;
 const InfoContent: FC = () => {
-  console.log('渲染2');
   const dispatch = useDispatch();
   const { banks } = useSelector(
     (state: ConnectState) => state.information,
@@ -142,6 +147,16 @@ const InfoContent: FC = () => {
     },
     { manual: true, fetchKey: (param) => param.key },
   );
+  //todo 识别身份证信息
+  const identifyIdCardRequest = useRequest(
+    (params: IdentifyIDCardParams) => {
+      return dispatch({
+        type: 'information/identifyIdCard',
+        payload: params,
+      });
+    },
+    { manual: true },
+  );
 
   /**
    * todo 初始化数据（生成工号）
@@ -156,6 +171,36 @@ const InfoContent: FC = () => {
    */
   const workerPictureEvent = (e: any): any => {
     console.log('上传的证件照:', e);
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e && e.fileList;
+  };
+  const idCardPictureEvent = (e: any): any => {
+    if (e.file.status === 'done') {
+      console.log('上传的身份证照:', e);
+      identifyIdCardRequest
+        .run({
+          ImageBase64: e.file.thumbUrl,
+        })
+        .then((response: ResResponse<IDCardOCRResponse> | undefined) => {
+          if (response) {
+            if (response.code === CodeStatus.Success) {
+              const { Name, IdNum, Address } = response.data;
+              form.setFieldsValue({
+                name: Name,
+                idNumber: IdNum,
+                address: Address,
+              });
+            } else {
+              message.error(response.message).then();
+              form.resetFields(['name', 'address', 'idNumber']);
+            }
+          } else {
+            form.resetFields(['name', 'address', 'idNumber']);
+          }
+        });
+    }
     if (Array.isArray(e)) {
       return e;
     }
@@ -428,28 +473,30 @@ const InfoContent: FC = () => {
               {({ getFieldValue }) => {
                 const workerPicture = getFieldValue('workerPicture');
                 return (
-                  <Form.Item
-                    name="workerPicture"
-                    valuePropName="fileList"
-                    getValueFromEvent={workerPictureEvent}
-                    noStyle
-                    rules={[{ required: true, message: '请上传证件照' }]}
-                  >
-                    <StyledUpload
-                      accept={'.png,.jpg,.svg'}
-                      name="files"
-                      listType="picture-card"
-                      maxCount={1}
-                      action="/upload.do"
-                      beforeUpload={() => {
-                        return false;
-                      }}
+                  <Spin spinning={false} tip={'识别中'}>
+                    <Form.Item
+                      name="workerPicture"
+                      valuePropName="fileList"
+                      getValueFromEvent={workerPictureEvent}
+                      noStyle
+                      rules={[{ required: true, message: '请上传证件照' }]}
                     >
-                      {workerPicture.length === 0 ? (
-                        <div style={{ color: 'white' }}>上传证件照</div>
-                      ) : null}
-                    </StyledUpload>
-                  </Form.Item>
+                      <StyledUpload
+                        accept={'.png,.jpg,.svg'}
+                        name="files"
+                        listType="picture-card"
+                        maxCount={1}
+                        action="/upload.do"
+                        beforeUpload={() => {
+                          return false;
+                        }}
+                      >
+                        {workerPicture.length === 0 ? (
+                          <div style={{ color: 'white' }}>上传证件照</div>
+                        ) : null}
+                      </StyledUpload>
+                    </Form.Item>
+                  </Spin>
                 );
               }}
             </Form.Item>
@@ -464,25 +511,27 @@ const InfoContent: FC = () => {
               {({ getFieldValue }) => {
                 const idPicture = getFieldValue('idPicture');
                 return (
-                  <Form.Item
-                    name="idPicture"
-                    valuePropName="fileList"
-                    getValueFromEvent={workerPictureEvent}
-                    rules={[{ required: true, message: '请上传身份证照片' }]}
-                    noStyle
-                  >
-                    <StyledIdCardUpload
-                      accept={'.png,.jpg,.svg'}
-                      name="files"
-                      listType="picture-card"
-                      maxCount={1}
-                      action="/upload.do"
+                  <Spin spinning={identifyIdCardRequest.loading} tip={'识别中'}>
+                    <Form.Item
+                      name="idPicture"
+                      valuePropName="fileList"
+                      getValueFromEvent={idCardPictureEvent}
+                      rules={[{ required: true, message: '请上传身份证照片' }]}
+                      noStyle
                     >
-                      {idPicture.length === 0 ? (
-                        <div style={{ color: 'white' }}>上传身份正照片</div>
-                      ) : null}
-                    </StyledIdCardUpload>
-                  </Form.Item>
+                      <StyledIdCardUpload
+                        accept={'.png,.jpg,.svg'}
+                        name="files"
+                        listType="picture-card"
+                        maxCount={1}
+                        action="/upload.do"
+                      >
+                        {idPicture.length === 0 ? (
+                          <div style={{ color: 'white' }}>上传身份正照片</div>
+                        ) : null}
+                      </StyledIdCardUpload>
+                    </Form.Item>
+                  </Spin>
                 );
               }}
             </Form.Item>

@@ -1,5 +1,5 @@
 import { Effect, ImmerReducer } from 'umi';
-import { createUser, isUsed } from '@/services/user';
+import { createUser, identifyIDCard, isUsed } from '@/services/user';
 import { ResResponse } from '@/types/common.interface';
 import { findAllBank } from '@/services/account';
 import { Bank } from '@/schemas/bank';
@@ -18,6 +18,7 @@ export interface InformationModelType {
     createUser: Effect;
     checkIsUsedByUser: Effect;
     findAllBank: Effect;
+    identifyIdCard: Effect;
   };
   reducers: {
     save: ImmerReducer<InformationModelState>;
@@ -97,6 +98,14 @@ const informationModel: InformationModelType = {
           });
         }
       }
+    },
+    /**
+     * todo 识别身份证的信息
+     * @param payload
+     * @param call
+     */
+    *identifyIdCard({ payload }, { call }) {
+      return yield call(identifyIDCard, payload);
     },
   },
   reducers: {
