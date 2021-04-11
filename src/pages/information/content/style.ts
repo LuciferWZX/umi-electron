@@ -31,3 +31,4 @@ export const StyledIdCardUpload = styled(Upload)`
     height: 140px;
   }
 `;
+export const StyledContent = styled.div``;
